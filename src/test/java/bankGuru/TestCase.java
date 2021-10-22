@@ -24,17 +24,21 @@ public class TestCase extends BaseTest {
     customizeStatementPO customizeStatementPage;
     fundTransferPO fundTransferPage;
     changePWPO changePWPage;
+    depositPO depositPage;
+    withdrawPO withdrawPage;
+    balancePO balancePage;
     String email , userID , pass , customerName , customerID , dob , addr , city , state , pin , mobile , mail , password , accountID ;
     String deposit , accountType , date;
     String addEdit , stateEdit , cityEdit , pinEdit ,mobileEdit , emailEdit;
-    String customerName1 , customerID1 , dob1 , addr1 , city1 , state1 , pin1 , mobile1 , mail1 , password1 , accountID1 ;;
+    String customerName1 , customerID1 , dob1 , addr1 , city1 , state1 , pin1 , mobile1 , mail1 , password1 , accountID1 ;
+    String depositNum , withdrawNum ,transferNum , numAfterDeposit , numAfterWithdraw , numAfterTransfer;
 
     @Parameters({"browser", "url"})
     @BeforeClass
     public void beforeClass(String browserName, String appUrl) {
         driver = getBrowserDriver(browserName, appUrl);
-
-        customerName = "HieuDT";
+        // Payee
+        customerName = "payee";
         dob = "10/06/1995";
         addr = "NTT";
         city = "HN";
@@ -52,6 +56,27 @@ public class TestCase extends BaseTest {
         pinEdit = "123987";
         mobileEdit = "1111111111";
         emailEdit = "hoanp95@gmail.com";
+
+        //Payer
+        customerName1 = "Payer";
+        dob1 = "19/05/1995";
+        addr1 = "Ha Dong";
+        city1 = "Ha Noi";
+        state1 = "VietNam";
+        pin1 = "100000";
+        mobile1 = "0968430665";
+        mail1 = "payer@gmail.com";
+        password1 = "100000";
+        deposit = "50000";
+
+        depositNum = "5000";
+        withdrawNum = "15000";
+        transferNum = "10000";
+
+        numAfterDeposit = String.valueOf(Integer.valueOf(deposit) + Integer.valueOf(depositNum));
+        numAfterWithdraw = String.valueOf(Integer.valueOf(numAfterDeposit) - Integer.valueOf(withdrawNum));
+        numAfterTransfer = String.valueOf(Integer.valueOf(numAfterDeposit) - Integer.valueOf(transferNum));
+
 
     }
 
@@ -332,11 +357,50 @@ public class TestCase extends BaseTest {
         log.info("Verify back to dashboardpage");
         verifyTrue(dashboardPage.isMsgWelcomeDisplayed("Welcome To Manager's Page of Guru99 Bank"));
 
+        log.info("Create the second new customer");
+        dashboardPage.clickToLink(driver , "New Customer");
+
+        newCustomerPage = PageGenerator.getNewCustomerPage(driver);
+
+        log.info("Input value to new customer");
+        newCustomerPage.sendValueToField(driver , "name" , customerName1);
+
+        log.info("Input value to dob");
+        newCustomerPage.sendValueToField(driver , "dob" , dob1);
+
+        log.info("Input value to address");
+        newCustomerPage.sendValueToField(driver  , "addr" , addr1);
+
+        log.info("Input value to city");
+        newCustomerPage.sendValueToField(driver , "city"  , city1);
+
+        log.info("Input value to state");
+        newCustomerPage.sendValueToField(driver  ,"state" , state1);
+
+        log.info("Input value to pin");
+        newCustomerPage.sendValueToField(driver  ,"pinno" , pin1);
+
+        log.info("Input value to mobile");
+        newCustomerPage.sendValueToField(driver  ,"telephoneno" , mobile1);
+
+        log.info("Input value to email");
+        newCustomerPage.sendValueToField(driver  ,"emailid" , mail1);
+
+        log.info("Input value to password");
+        newCustomerPage.sendValueToField(driver  ,"password" , password1);
+
+        log.info("Click to submit button");
+        newCustomerPage.clickToButton(driver , "sub");
+
+        log.info("Get Customer ID");
+        customerID1 = newCustomerPage.getTextInTable(driver , "Customer ID");
+
+
     }
 
     @Test
     public void TC_12(){
-        dashboardPage.clickToLink(driver , "Edit Customer");
+        newCustomerPage.clickToLink(driver , "Edit Customer");
 
         log.info("Go to Edit customer screen");
         editCustomerPage = PageGenerator.getEditCustomerPage(driver);
@@ -649,11 +713,27 @@ public class TestCase extends BaseTest {
 
         dashboardPage.isMsgWelcomeDisplayed("Welcome To Manager's Page of Guru99 Bank");
 
+        dashboardPage.clickToLink(driver , "New Account");
+
+        newAccountPage = PageGenerator.getNewAccountPage(driver);
+
+        log.info("Input customer id");
+        newAccountPage.sendValueToField(driver , "cusid" , customerID1);
+
+        log.info("Input depoosit");
+        newAccountPage.sendValueToField(driver , "inideposit" , "50000");
+
+        log.info("Click to submit button");
+        newAccountPage.clickToButton(driver , "button2");
+
+        log.info("Get account no 2");
+        accountID1 = newAccountPage.getTextInTable(driver, "Account ID");
+
     }
 
     @Test
     public void TC_17(){
-        dashboardPage.clickToLink(driver , "Edit Account");
+        newAccountPage.clickToLink(driver , "Edit Account");
 
         editAccountPage = PageGenerator.getEditAccountPage(driver);
 
@@ -994,11 +1074,246 @@ public class TestCase extends BaseTest {
     }
 
     @Test
-    public void TC_24(){
-        changePWPage.clickToLink(driver , "Edit Customer");
+    public void TC_24() {
+        changePWPage.clickToLink(driver, "Edit Customer");
+
+        log.info("Click to link Deposit");
+        changePWPage.clickToLink(driver, "Deposit");
+
+        depositPage = PageGenerator.getDepositPage(driver);
+
+        log.info("Verify title deposit page");
+        verifyTrue(depositPage.isPageTitleCorrect(driver, "Amount Deposit Form"));
+
+        log.info("Input value account no");
+        depositPage.sendValueToField(driver, "accountno", accountID);
+
+        log.info("Input value amount");
+        depositPage.sendValueToField(driver, "ammount", depositNum);
+
+        log.info("Input value description");
+        depositPage.sendValueToField(driver, "desc", "Deposit");
+
+        log.info("Click button submit");
+        depositPage.clickToButton(driver, "AccSubmit");
+
+        log.info("Verify title of table info");
+        verifyTrue(depositPage.isPageTitleCorrect(driver, "Transaction details of Deposit for Account " + accountID));
+
+        log.info("Verify Account No");
+        verifyEquals(depositPage.getTextInTable(driver, "Account No"), accountID);
+
+        log.info("Verify Amount Credited");
+        verifyEquals(depositPage.getTextInTable(driver, "Amount Credited"), depositNum);
+
+        log.info("Verify Type of Transaction");
+        verifyEquals(depositPage.getTextInTable(driver, "Type of Transaction"), "Deposit");
+
+        log.info("Verify Description");
+        verifyEquals(depositPage.getTextInTable(driver, "Description"), "Deposit");
+
+        log.info("Verify Current Balance");
+        verifyEquals(depositPage.getTextInTable(driver, "Current Balance"), numAfterDeposit);
+
+    }
+
+    @Test
+    public void TC_25(){
+        depositPage.clickToLink(driver , "Withdrawal");
+
+        withdrawPage = PageGenerator.getWithdrawPage(driver);
+
+        log.info("Verify with draw page title");
+        verifyTrue(withdrawPage.isPageTitleCorrect(driver , "Amount Withdrawal Form"));
+
+        log.info("Input value account no");
+        withdrawPage.sendValueToField(driver , "accountno" , accountID);
+
+        log.info("Input value amount");
+        withdrawPage.sendValueToField(driver , "ammount" , withdrawNum);
+
+        log.info("Input value description");
+        withdrawPage.sendValueToField(driver , "desc" , "Withdraw");
+
+        log.info("CLick button subbmit");
+        withdrawPage.clickToButton(driver, "AccSubmit");
+
+        log.info("Verify title after submit");
+        verifyTrue(withdrawPage.isPageTitleCorrect(driver , "Transaction details of Withdrawal for Account " + accountID));
+
+        log.info("Verify account no");
+        verifyEquals(withdrawPage.getTextInTable(driver , "Account No") , accountID);
+
+        log.info("Verify Amount Debited");
+        verifyEquals(withdrawPage.getTextInTable(driver , "Amount Debited") , withdrawNum);
+
+        log.info("Verify Type of Transaction");
+        verifyEquals(withdrawPage.getTextInTable(driver , "Type of Transaction") , "Withdrawal");
+
+        log.info("Verify Description");
+        verifyEquals(withdrawPage.getTextInTable(driver , "Description") , "Withdraw");
+
+        log.info("Verify Current Balance");
+        verifyEquals(withdrawPage.getTextInTable(driver , "Current Balance") , numAfterDeposit);
+
+    }
+
+    @Test
+    public void TC_26(){
+        withdrawPage.clickToLink(driver , "Fund Transfer");
+
+        fundTransferPage = PageGenerator.getFundTransferPage(driver);
+
+        log.info("Verify fund transfer form title");
+        verifyTrue(fundTransferPage.isPageTitleCorrect(driver , "Fund transfer"));
+
+        log.info("Input value payer account");
+        fundTransferPage.sendValueToField(driver , "payersaccount" , accountID);
+
+        log.info("Input value payee account");
+        fundTransferPage.sendValueToField(driver , "payeeaccount" , accountID1);
+
+        log.info("Input value of amount");
+        fundTransferPage.sendValueToField(driver , "ammount" , transferNum);
+
+        log.info("Input value of description");
+        fundTransferPage.sendValueToField(driver , "desc" , "Transfer");
+
+        log.info("Click to subbmit button");
+        fundTransferPage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify title after submit");
+        verifyTrue(fundTransferPage.isPageTitleCorrect(driver , "Fund Transfer Details"));
+
+        log.info("Verify field from account");
+        verifyEquals(fundTransferPage.getTextInTable(driver , "From Account Number") , accountID);
+
+        log.info("Verify field to account");
+        verifyEquals(fundTransferPage.getTextInTable(driver , "To Account Number") , accountID1);
+
+        log.info("Verify amount");
+        verifyEquals(fundTransferPage.getTextInTable(driver , "Amount") , transferNum);
+
+        log.info("Verify description");
+        verifyEquals(fundTransferPage.getTextInTable(driver , "Description") , "Transfer");
+    }
+
+    @Test
+    public void TC_27(){
+        fundTransferPage.clickToLink(driver , "Balance Enquiry");
+
+        balancePage = PageGenerator.getBalancePage(driver);
+
+        log.info("Verify title form balance");
+        verifyTrue(balancePage.isPageTitleCorrect(driver , "Balance Enquiry Form"));
+
+        log.info("Input account no");
+        balancePage.sendValueToField(driver , "accountno" , accountID);
+
+        log.info("Click to submit");
+        balancePage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify title of balance form details");
+        verifyTrue(balancePage.isPageTitleCorrect(driver , "Balance Details for Account " + accountID));
+
+        log.info("Verify account no");
+        verifyEquals(balancePage.getTextInTable(driver , "Account No") , accountID);
+
+        log.info("Verify Type of account");
+        verifyEquals(balancePage.getTextInTable(driver , "Type of Account") , "Current");
+
+        log.info("Verify balance");
+        verifyEquals(balancePage.getTextInTable(driver , "Balance") , numAfterTransfer);
+    }
+
+    @Test
+    public void TC_28(){
+        balancePage.clickToLink(driver , "Delete Account");
+
+        deleteAccountPage = PageGenerator.getDeleteAccountPage(driver);
+
+        log.info("Input Account no");
+        deleteAccountPage.sendValueToField(driver  ,"accountno" , accountID);
+
+        log.info("Click to button subbmit");
+        deleteAccountPage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify msg in alert");
+        verifyEquals(deleteAccountPage.getAlertText(driver) , "Do you really want to delete this Account?");
+
+        log.info("Click yes in alert");
+        deleteAccountPage.acceptAlert(driver);
+
+        log.info("Verify msg after delete account");
+        verifyEquals(deleteAccountPage.getAlertText(driver) , "Account Deleted Sucessfully");
+
+        log.info("Close pop up");
+        deleteAccountPage.acceptAlert(driver);
+
+        dashboardPage = PageGenerator.getDashboardPage(driver);
+        log.info("Verify back to dashboard page");
+        verifyTrue(dashboardPage.isMsgWelcomeDisplayed("Account Deleted Sucessfully"));
+
+        dashboardPage.clickToLink(driver , "Edit Account");
+
+        editAccountPage = PageGenerator.getEditAccountPage(driver);
+
+        log.info("Input account no deleted");
+        editAccountPage.sendValueToField(driver , "accountno" , accountID);
+
+        log.info("Click button submit");
+        editAccountPage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify msg no account id displayed");
+        verifyEquals(editAccountPage.getAlertText(driver) , "Account does not exist");
+
+        log.info("Close pop up");
+        editAccountPage.acceptAlert(driver);
+    }
+    @Test
+    public void TC_29(){
+        editAccountPage.clickToLink(driver , "Delete Customer");
+
+        deleteCustomerPage = PageGenerator.getDeleteCustomerPage(driver);
+
+        log.info("Input customer id");
+        deleteCustomerPage.sendValueToField(driver , "cusid" , customerID);
+
+        log.info("Click button submit");
+        deleteCustomerPage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify msg after click button submit");
+        verifyEquals(deleteCustomerPage.getAlertText(driver) , "Do you really want to delete this Customer?");
+
+        log.info("Accept delete customer");
+        deleteCustomerPage.acceptAlert(driver);
+
+        log.info("Verify msg after delete customer");
+        verifyEquals(deleteCustomerPage.getAlertText(driver) , "Customer deleted Successfully");
+
+        log.info("Close pop up after delete");
+        deleteAccountPage.acceptAlert(driver);
+
+        log.info("Verify back to dashboard page");
+        dashboardPage = PageGenerator.getDashboardPage(driver);
+
+        verifyTrue(dashboardPage.isMsgWelcomeDisplayed("Welcome To Manager's Page of Guru99 Bank"));
+
+        dashboardPage.clickToLink(driver , "Edit Custoemr");
 
         editCustomerPage = PageGenerator.getEditCustomerPage(driver);
 
         log.info("Input customer id");
+        editCustomerPage.sendValueToField(driver , "cusid" , customerID);
+
+        log.info("Click submit button");
+        editCustomerPage.clickToButton(driver , "AccSubmit");
+
+        log.info("Verify message no customer");
+        verifyEquals(editCustomerPage.getAlertText(driver) , "Customer does not exist!!");
+
+        log.info("Close pop up");
+        editCustomerPage.acceptAlert(driver);
+
     }
 }

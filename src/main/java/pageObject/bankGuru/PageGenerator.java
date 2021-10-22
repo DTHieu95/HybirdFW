@@ -63,4 +63,16 @@ public class PageGenerator {
     public static changePWPO getChangePWPage(WebDriver driver){
         return new changePWPO(driver);
     }
+
+    public static withdrawPO getWithdrawPage(WebDriver driver){
+        return new withdrawPO(driver);
+    }
+
+    public static depositPO getDepositPage(WebDriver driver){
+        return new depositPO(driver);
+    }
+
+    public static balancePO getBalancePage(WebDriver driver){
+        return new balancePO(driver);
+    }
 }
